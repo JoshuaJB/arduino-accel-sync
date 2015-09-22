@@ -1,0 +1,7 @@
+= Arduino Acceleration Syncronization =
+
+This allows for accelerometer readings from the Arduino (on the LightBlue Bean platform) to by uploaded to a central analytics database.
+
+As the LightBlue Bean uses BLE (Bluetooth Low Energy), we support proxying data through Android, iOS, or OS X based systems which support BLE.
+
+
