@@ -357,4 +357,26 @@ public class MainActivity extends Activity {
             finishAndSaveReading();
         }
     }
+
+    private class Reading {
+        public int x;
+        public int y;
+        public int z;
+        public long timestamp = 0;
+        public Reading(int x, int y, int z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+        /* Set reading timestamp
+         * @param posixMSTime time in ms since UNIX epoch
+         */
+        public void setTimestamp(long posixMSTime) {
+            timestamp = posixMSTime;
+        }
+        @Override
+        public String toString() {
+            return String.format("\nX: %+5d, Y: %+5d, Z: %+5d, Time: %s", x, y, z, DateFormat.getDateTimeInstance().format(new Date(timestamp)));
+        }
+    }
 }
