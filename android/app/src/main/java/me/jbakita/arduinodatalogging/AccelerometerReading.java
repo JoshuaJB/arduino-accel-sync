@@ -1,4 +1,4 @@
-package me.jbakita.pebbledatalogging;
+package me.jbakita.arduinodatalogging;
 
 import java.text.DateFormat;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package me.jbakita.pebbledatalogging;
+package me.jbakita.arduinodatalogging;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

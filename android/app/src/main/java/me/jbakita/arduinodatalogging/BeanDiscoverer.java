@@ -1,4 +1,4 @@
-package me.jbakita.pebbledatalogging;
+package me.jbakita.arduinodatalogging;
 
 import com.punchthrough.bean.sdk.Bean;
 import com.punchthrough.bean.sdk.BeanDiscoveryListener;

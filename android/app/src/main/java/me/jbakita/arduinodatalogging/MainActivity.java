@@ -1,4 +1,4 @@
-package me.jbakita.pebbledatalogging;
+package me.jbakita.arduinodatalogging;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,8 +18,6 @@ import android.widget.ProgressBar;
 
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.PebbleKit.PebbleDataLogReceiver;
-
-import com.punchthrough.bean.sdk.Bean;
 
 import java.io.File;
 import java.io.FileOutputStream;

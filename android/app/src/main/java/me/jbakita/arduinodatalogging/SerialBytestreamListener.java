@@ -1,4 +1,4 @@
-package me.jbakita.pebbledatalogging;
+package me.jbakita.arduinodatalogging;
 
 import android.util.Log;
 
@@ -6,7 +6,6 @@ import com.punchthrough.bean.sdk.BeanListener;
 import com.punchthrough.bean.sdk.message.BeanError;
 import com.punchthrough.bean.sdk.message.ScratchBank;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
