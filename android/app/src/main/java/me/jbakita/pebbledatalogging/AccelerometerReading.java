@@ -39,7 +39,7 @@ public class AccelerometerReading {
      * Get the X-directed acceleration
      * @return The integer representation of X
      */
-    public int GetX() {
+    public int getX() {
         return x;
     }
 
@@ -47,7 +47,7 @@ public class AccelerometerReading {
      * Get the X-directed acceleration
      * @return The integer representation of X
      */
-    public int GetY() {
+    public int getY() {
         return y;
     }
 
@@ -55,7 +55,7 @@ public class AccelerometerReading {
      * Get the X-directed acceleration
      * @return The integer representation of X
      */
-    public int GetZ() {
+    public int getZ() {
         return z;
     }
 
@@ -63,10 +63,11 @@ public class AccelerometerReading {
      * Retrieve the vector magnitude of this reading.
      * (computed using extended pythagorian theorem)
      */
-    public double GetMagnitude() {
+    public double getMagnitude() {
         return Math.sqrt(x * x + y * y + z * z);
     }
 
+    public long getTimestamp() {return timestamp;}
     /**
      * Retrive a human-readable character string representation
      */
