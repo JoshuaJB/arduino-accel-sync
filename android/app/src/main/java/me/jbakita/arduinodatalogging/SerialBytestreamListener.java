@@ -13,22 +13,24 @@ import java.util.ArrayList;
  * the LightBlue Bean.
  */
 public class SerialBytestreamListener implements BeanListener {
+
+
     // Holds our buffer of all recived accelerometer readings
     private ArrayList<AccelerometerReading> buffer = new ArrayList();
 
     @Override
     public void onConnected() {
-        Log.i("SerialBytestreamListerner", "Connected.");
+        Log.i("SerialBSListerner", "Connected.");
     }
 
     @Override
     public void onConnectionFailed() {
-        Log.w("SerialBytestreamListener", "Connection Failed.");
+        Log.w("SerialBSListener", "Connection Failed.");
     }
 
     @Override
     public void onDisconnected() {
-        Log.i("SerialBytestreamListener", "Disconnected");
+        Log.i("SerialBSListener", "Disconnected");
     }
 
     @Override
@@ -38,7 +40,7 @@ public class SerialBytestreamListener implements BeanListener {
 
     @Override
     public void onError(BeanError beanError) {
-        Log.e("SerialBytestreamListener", beanError.toString());
+        Log.e("SerialBSListener", beanError.toString());
     }
 
     /**
@@ -69,7 +71,7 @@ public class SerialBytestreamListener implements BeanListener {
          * -extends the byte to an integer with sign extension first....
          */
         if (bytes.length != 4) {
-            Log.i("SerialBytestreamListener", "Unhandled serial message: "
+            Log.i("SerialBSListener", "Unhandled serial message: "
                     + bytes.toString());
             return;
         }
@@ -99,8 +101,10 @@ public class SerialBytestreamListener implements BeanListener {
                     bytes[3]
             };
             // Decode the bytes and push them onto the buffer
-            buffer.add(new AccelerometerReading(decodeBytes(xbytes),
-                    decodeBytes(ybytes), decodeBytes(zbytes)));
+            AccelerometerReading accelReading = new AccelerometerReading(decodeBytes(xbytes),
+                    decodeBytes(ybytes), decodeBytes(zbytes));
+            buffer.add(accelReading);
+            Log.d("SerialBSListener", "Accelerometer reading" + accelReading.toString());
             return;
         }
         // It's a timesync message

@@ -8,9 +8,10 @@ import java.util.ArrayList;
 /**
  * Find LightBlue Beans and maintain a list of all devices found during this scan.
  */
-public class BeanDiscoverer implements BeanDiscoveryListener {
+public class BeanDiscoverer implements com.punchthrough.bean.sdk.BeanDiscoveryListener {
     private ArrayList<Bean> beans = new ArrayList();
     private boolean done = false;
+    private BeanDiscovererListener listener;
 
     @Override
     public void onBeanDiscovered(Bean bean, int i) {
@@ -20,6 +21,7 @@ public class BeanDiscoverer implements BeanDiscoveryListener {
     @Override
     public void onDiscoveryComplete() {
         done = true;
+        listener.onDiscoveryComplete();
     }
 
     public boolean isScanComplete() {
@@ -28,5 +30,9 @@ public class BeanDiscoverer implements BeanDiscoveryListener {
 
     public Bean[] getDiscovered() {
         return beans.toArray(new Bean[]{});
+    }
+
+    public void addListenter(BeanDiscovererListener listener){
+        this.listener = listener;
     }
 }

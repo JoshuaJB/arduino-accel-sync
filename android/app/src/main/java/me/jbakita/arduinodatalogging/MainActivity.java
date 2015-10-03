@@ -18,6 +18,8 @@ import android.widget.ProgressBar;
 
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.PebbleKit.PebbleDataLogReceiver;
+import com.punchthrough.bean.sdk.Bean;
+import com.punchthrough.bean.sdk.BeanManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +35,9 @@ import java.util.ArrayList;
  * Implements a PebbleDataLogReceiver to process received log data, 
  * as well as a finished session.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements BeanDiscovererListener {
+
+    private BeanDiscoverer beanDiscovererlistener;
 
     // WATCHAPP_UUID *MUST* match the UUID used in the watchapp
     private static final UUID WATCHAPP_UUID = UUID.fromString("631b528e-c553-486c-b5ac-da08f63f01de");
@@ -96,97 +100,22 @@ public class MainActivity extends Activity {
         Button saveButton = (Button)findViewById(R.id.savebutton);
         saveButton.setOnClickListener(new saveListener());
         saveButton.setText("Save");
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Define data reception behavior
-        dataloggingReceiver = new PebbleDataLogReceiver(WATCHAPP_UUID) {
-            @Override
-            public void receiveData(Context context, UUID logUuid, Long timestamp, Long tag, byte[] data) {
-                // Check this is a valid data log
-                if (tag.intValue() <= features.length) {
-                    // To distinguish between timestamps and readings,
-                    // the first bit is 0 for readings and 1 for timestamp
-                    /* To conserve data, but maximize accuracy, the first 'reading'
-                     * for each data log ID is the beginning timestamp.
-                     */
-                    if (sensors.indexOf(new Sensor(features[tag.intValue()], 0)) == -1) {
-                        // First reading must be a timestamp
-                        if (data[0] >> 31 != 0xffffffff) {
-                            displayDialog("Error", "It seems like a data buffer is out of sync. Data will be corrupted. Please flush buffers and try again.");
-                            return;
-                        }
-                        // Erase the tag bit with sign extension to prep for decoding
-                        data[0] = (byte)(data[0] << 25 >> 25);
-                        // Decode and save
-                        Sensor sensor = new Sensor(features[tag.intValue()], decodeBytes(data));
-                        sensors.add(sensor);
-                    }
-                    else if (data[0] >> 31 == 0xffffffff) {
-                        // We have a timestamp
-                        // Erase the tag bit with sign extension to prep for decoding
-                        data[0] = (byte)(data[0] << 25 >> 25);
-                        // Decode and add timestamp
-                        long syncTimestamp = decodeBytes(data);
-                        Sensor sensor = sensors.get(sensors.indexOf(new Sensor(features[tag.intValue()], 0)));
-                        sensor.addTimestamp(syncTimestamp);
-                        // Refresh UI
-                        adapter.notifyDataSetChanged();
-                    }
-                    else {
-                        // We have a reading
-                        // Erase the tag bit with sign extension to prep for decoding
-                        data[0] = (byte)(data[0] << 25 >> 25);
-                        // Decode and add reading
-                        int x = (int)decodeBytes(new byte[]{data[0], data[1]});
-                        int y = (int)decodeBytes(new byte[]{data[2], data[3]});
-                        int z = (int)decodeBytes(new byte[]{data[4], data[5]});
-                        Sensor sensor = sensors.get(sensors.indexOf(new Sensor(features[tag.intValue()], 0)));
-                        sensor.addReading(new AccelerometerReading(x, y, z));
-                    }
-                }
-                else {
-                    throw new IllegalArgumentException(tag.intValue() + " is not a valid data log ID.");
-                }
-            }
 
-            @Override
-            public void onFinishSession(Context context, UUID logUuid, Long timestamp, Long tag) {
-                super.onFinishSession(context, logUuid, timestamp, tag);
-            }
-
-        };
-        // Register DataLogging Receiver
-        PebbleKit.registerDataLogReceiver(this, dataloggingReceiver);
+        beanDiscovererlistener = new BeanDiscoverer();
+        beanDiscovererlistener.addListenter(this);
+        BeanManager.getInstance().startDiscovery(beanDiscovererlistener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Always unregister callbacks
-        if(dataloggingReceiver != null) {
-            unregisterReceiver(dataloggingReceiver);
-        }
-    }
-
-    /* Decode an array of bytes to an integer
-     * @param bytes An array of bytes, big endian
-     */
-    private long decodeBytes(byte[] bytes) {
-        /* Note on Java and Bitwise Operators
-         *  Java bitwise operators only work on ints and longs,
-         *  Bytes will undergo promotion with sign extension first.
-         *  So, we have to undo the sign extension on the lower order
-         *  bits here.
-         */
-        long ans = bytes[0];
-        for (int i = 1; i < bytes.length; i++) {
-            ans <<= 8;
-            ans |= bytes[i] & 0x000000FF;
-        }
-        return ans;
     }
 
     private void getMotionActivity(final MotionActivity act) {
@@ -354,5 +283,14 @@ public class MainActivity extends Activity {
         public void onClick(View v) {
             finishAndSaveReading();
         }
+    }
+    public void onDiscoveryComplete() {
+        SerialBytestreamListener sbsl = new SerialBytestreamListener();
+        Bean[] beans = beanDiscovererlistener.getDiscovered();
+        if (beans.length == 0) {
+            Log.i("MainActivity", "No Arduino devices discovered.");
+        }
+        beans[0].connect(this, sbsl);
+
     }
 }
