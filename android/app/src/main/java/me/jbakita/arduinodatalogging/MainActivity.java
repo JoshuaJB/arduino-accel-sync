@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        startDiscovery();
         // Get listview
         ListView sensorsView = (ListView)findViewById(R.id.listView);
         // Setup progress bar
@@ -107,12 +107,16 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
     @Override
     protected void onResume() {
         super.onResume();
-
+        startDiscovery();
+    }
+    private void startDiscovery(){
         beanDiscovererlistener = new BeanDiscoverer();
         beanDiscovererlistener.addListenter(this);
-        BeanManager.getInstance().startDiscovery(beanDiscovererlistener);
-    }
 
+        if(!BeanManager.getInstance().startDiscovery(beanDiscovererlistener)){
+            Log.w("MainActivity", "Bluetooth stack was unable to start the scan");
+        }
+    }
     @Override
     protected void onPause() {
         super.onPause();
@@ -290,7 +294,8 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
         if (beans.length == 0) {
             Log.i("MainActivity", "No Arduino devices discovered.");
         }
-        beans[0].connect(this, sbsl);
-
+        else {
+            beans[0].connect(this, sbsl);
+        }
     }
 }

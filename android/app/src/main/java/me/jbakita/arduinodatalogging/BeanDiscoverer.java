@@ -1,5 +1,7 @@
 package me.jbakita.arduinodatalogging;
 
+import android.util.Log;
+
 import com.punchthrough.bean.sdk.Bean;
 import com.punchthrough.bean.sdk.BeanDiscoveryListener;
 
@@ -16,6 +18,7 @@ public class BeanDiscoverer implements com.punchthrough.bean.sdk.BeanDiscoveryLi
     @Override
     public void onBeanDiscovered(Bean bean, int i) {
         beans.add(bean);
+        Log.i("BeanDiscover", "bean discovered");
     }
 
     @Override
