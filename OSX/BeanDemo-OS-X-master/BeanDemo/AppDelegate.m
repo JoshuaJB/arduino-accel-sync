@@ -289,6 +289,7 @@
         Coord coord;
         coord.t = timeStep;
     
+    
         coord.y = acceleration.x;
         [graph.dataX addObject:[NSValue value:&coord withObjCType:@encode(Coord)]];
         [xAcc setFloatValue:acceleration.x];
@@ -300,7 +301,16 @@
         coord.y = acceleration.z;
         [graph.dataZ addObject:[NSValue value:&coord withObjCType:@encode(Coord)]];
         [zAcc setFloatValue:acceleration.z];
-        
+    
+    //LUIZA`S CHANGES: //
+    NSURL *URL = [NSURL fileURLWithPath:@"/Users/luizawille/Downloads/BeanDemo-OS-X-master/file.txt"];
+    
+    NSString *string = [NSString stringWithContentsOfURL:URL encoding: NSUTF8StringEncoding error: nil];
+    NSLog(@"fileContent = %@", string);
+    NSString *newContent = [NSString stringWithFormat:@"%@-x : %f, y: %f, z: %f- \n", string, acceleration.x, acceleration.y, acceleration.z];
+    [newContent writeToURL:URL atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    //END OF LUIZAS CHANGES//
+
         timeStep++;
         [graph display];
 
