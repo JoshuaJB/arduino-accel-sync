@@ -293,9 +293,27 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
         Bean[] beans = beanDiscovererlistener.getDiscovered();
         if (beans.length == 0) {
             Log.i("MainActivity", "No Arduino devices discovered.");
+            displayDialog("Warning", "No Arduino devices discovered.");
         }
         else {
-            beans[0].connect(this, sbsl);
+            //beans[0].connect(this, sbsl);
+            String[] beansString = new String[beans.length];
+            for (int i = 0; i < beans.length; i++) {
+                beansString[i] = beans[i].toString();
+            }
+            chooseBean(beansString, beans, sbsl, this);
         }
+    }
+
+    private void chooseBean(final String[] beansString, final Bean[] beans, final SerialBytestreamListener sbsl, final Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Which bean do you want to connect to?")
+                .setItems(beansString, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        beans[which].connect(context, sbsl);
+                    }
+                });
+        builder.create().show();
+
     }
 }
