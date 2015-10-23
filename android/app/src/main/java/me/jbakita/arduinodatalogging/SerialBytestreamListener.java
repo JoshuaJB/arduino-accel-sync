@@ -20,7 +20,7 @@ public class SerialBytestreamListener implements BeanListener {
 
     @Override
     public void onConnected() {
-        Log.i("SerialBSListerner", "Connected.");
+        Log.i("SerialBSListener", "Connected.");
     }
 
     @Override
@@ -44,7 +44,7 @@ public class SerialBytestreamListener implements BeanListener {
     }
 
     /**
-     * We've recieved a dicrete serial message from the LightBlue Bean.
+     * We've received a discrete serial message from the LightBlue Bean.
      * We only care about messages containing accelerometer data. Our
      * message format is below:
      *  Data:
@@ -108,6 +108,7 @@ public class SerialBytestreamListener implements BeanListener {
             return;
         }
         // It's a timesync message
+        Log.d("SerialBSListener", "Received unknown message");
         //TODO
         return;
     }

@@ -37,11 +37,8 @@ import java.util.ArrayList;
  */
 public class MainActivity extends Activity implements BeanDiscovererListener {
 
-    private BeanDiscoverer beanDiscovererlistener;
+    private BeanDiscoverer discoverer;
 
-    // WATCHAPP_UUID *MUST* match the UUID used in the watchapp
-    private static final UUID WATCHAPP_UUID = UUID.fromString("631b528e-c553-486c-b5ac-da08f63f01de");
-    // 'features' needs to be kept in sync with the watchapp menu items and ordering
     private String[] features = {
         "DOMINANT_WRIST",
         "NON_DOMINATE_WRIST",
@@ -57,7 +54,6 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
     };
     private String[] activityStrings = {"Pushups", "Situps", "Jumping Jacks", "Stretching", "Running", "Walking"};
 
-    private PebbleDataLogReceiver dataloggingReceiver = null;
     private final ArrayList<Sensor> sensors = new ArrayList<Sensor>();
     private final ArrayList<MotionActivity> activities = new ArrayList<MotionActivity>();
     private ArrayAdapter<Sensor> adapter;
@@ -101,7 +97,7 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
         saveButton.setOnClickListener(new saveListener());
         saveButton.setText("Save");
 
-
+        startDiscovery();
     }
 
     @Override
@@ -110,11 +106,12 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
         startDiscovery();
     }
     private void startDiscovery(){
-        beanDiscovererlistener = new BeanDiscoverer();
-        beanDiscovererlistener.addListenter(this);
+        discoverer = new BeanDiscoverer();
+        discoverer.addListenter(this);
 
-        if(!BeanManager.getInstance().startDiscovery(beanDiscovererlistener)){
-            Log.w("MainActivity", "Bluetooth stack was unable to start the scan");
+        if(!BeanManager.getInstance().startDiscovery(discoverer)){
+            Log.w("MainActivity", "Bluetooth stack was unable to start scanning.");
+            displayDialog("Bluetooth Stack Error", "Unable to search for Beans.");
         }
     }
     @Override
@@ -183,6 +180,7 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
         dia.show();
         return dia;
     }
+
     private class Sensor {
         private String name;
         private long lastTimestamp = 0;
@@ -288,32 +286,39 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
             finishAndSaveReading();
         }
     }
+
+    /**
+     * Called when discoverer finishes scanning for Beans
+     */
     public void onDiscoveryComplete() {
-        SerialBytestreamListener sbsl = new SerialBytestreamListener();
-        Bean[] beans = beanDiscovererlistener.getDiscovered();
+        Bean[] beans = discoverer.getDiscovered();
         if (beans.length == 0) {
             Log.i("MainActivity", "No Arduino devices discovered.");
             displayDialog("Warning", "No Arduino devices discovered.");
         }
         else {
-            //beans[0].connect(this, sbsl);
             String[] beansString = new String[beans.length];
             for (int i = 0; i < beans.length; i++) {
-                beansString[i] = beans[i].toString();
+                beansString[i] = beans[i].getDevice().getName() + " (" + beans[i].getDevice().getAddress() + ")";
             }
-            chooseBean(beansString, beans, sbsl, this);
+            chooseBean(beansString, beans, this);
         }
     }
 
-    private void chooseBean(final String[] beansString, final Bean[] beans, final SerialBytestreamListener sbsl, final Context context) {
+    /**
+     * Displays the passed list of Beans to the user and hes them choose which one to connect to
+     * @param beansString A stringified list of Beans
+     * @param beans Array of Bean objects corresponding to parallel indices in the beansString array
+     * @param context What page we're displaying the dialog over
+     */
+    private void chooseBean(final String[] beansString, final Bean[] beans, final Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Which bean do you want to connect to?")
                 .setItems(beansString, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        beans[which].connect(context, sbsl);
+                        beans[which].connect(context, new SerialBytestreamListener());
                     }
                 });
         builder.create().show();
-
     }
 }
