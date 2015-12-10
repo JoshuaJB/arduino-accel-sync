@@ -7,6 +7,7 @@ import com.punchthrough.bean.sdk.message.BeanError;
 import com.punchthrough.bean.sdk.message.ScratchBank;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Listen and cache all the accelerometer readings that we recieve from
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 public class SerialBytestreamListener implements BeanListener {
 
 
-    // Holds our buffer of all recived accelerometer readings
+    // Holds our buffer of all received accelerometer readings
     private ArrayList<AccelerometerReading> buffer = new ArrayList();
 
     @Override
@@ -70,18 +71,42 @@ public class SerialBytestreamListener implements BeanListener {
          * handles binary ops on bytes SENSELESSlY. It automatically sign-
          * -extends the byte to an integer with sign extension first....
          */
-        if (bytes.length != 4) {
-            Log.i("SerialBSListener", "Unhandled serial message: "
-                    + bytes.toString());
+        if (bytes.length != 6) {
+            Log.i("SerialBSListener", "Unhandled serial message");
+            dumpBytes(bytes);
             return;
         }
+        dumpBytes(bytes);
         // Assume that if the first two bits are up, it's a data message
-        if ((bytes[0] & 0x000000FF) >= 0x000000C0) {
+        if (true){//(bytes[0] & 0x000000FF) >= 0x000000C0) {
+            int sensitivity = 16;// TODO: decodeBytes(Arrays.copyOfRange(bytes, 0, 0));
+            // Convert the Arduino's little-endian byte ordering to java's big-endian
+            byte[] xbytes = {
+                    bytes[1],
+                    bytes[0]
+            };
+            byte[] ybytes = {
+                    bytes[3],
+                    bytes[2]
+            };
+            byte[] zbytes = {
+                    bytes[5],
+                    bytes[4]
+            };
+            // Convert the bytes to integers and run the appropriate conversions
+            int x = (decodeBytes(xbytes) * sensitivity * 1000) / 511;
+            int y = (decodeBytes(ybytes) * sensitivity * 1000) / 511;
+            int z = (decodeBytes(zbytes) * sensitivity * 1000) / 511;
+            // Save and log
+            AccelerometerReading accelReading = new AccelerometerReading(x, y, z);
+            buffer.add(accelReading);
+            Log.d("SerialBSListener", "Accelerometer reading" + accelReading.toString());
+            return;
             /**
              * Again, java's byte type is broken and bitwise operations
              * become ABSOLUTE MONSTERS. The following comments use left
              * to right bit numbering starting at 0. (bits 0-1 are signal)
-             */
+             *
             // The X reading is bits 2-11. The 6 rightmost bits from byte
             // 0 and the 4 leftmost bits from byte 1.
             byte[] xbytes = {
@@ -102,15 +127,10 @@ public class SerialBytestreamListener implements BeanListener {
             };
             // Decode the bytes and push them onto the buffer
             AccelerometerReading accelReading = new AccelerometerReading(decodeBytes(xbytes),
-                    decodeBytes(ybytes), decodeBytes(zbytes));
-            buffer.add(accelReading);
-            Log.d("SerialBSListener", "Accelerometer reading" + accelReading.toString());
-            return;
+                    decodeBytes(ybytes), decodeBytes(zbytes));*/
         }
         // It's a timesync message
         Log.d("SerialBSListener", "Received unknown message");
-        //TODO
-        return;
     }
 
     /**
@@ -138,5 +158,13 @@ public class SerialBytestreamListener implements BeanListener {
      */
     public AccelerometerReading[] getBuffer() {
         return buffer.toArray(new AccelerometerReading[]{});
+    }
+
+    private void dumpBytes(byte[] bytes) {
+        String out = "";
+        for (byte b : bytes) {
+            out += String.format("|%8s", Integer.toBinaryString((int)b & 0xFF)).replace(' ', '0');
+        }
+        Log.d("SerialBSListener", out);
     }
 }

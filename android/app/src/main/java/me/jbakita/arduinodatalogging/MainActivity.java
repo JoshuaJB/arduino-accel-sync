@@ -316,6 +316,7 @@ public class MainActivity extends Activity implements BeanDiscovererListener {
         builder.setTitle("Which bean do you want to connect to?")
                 .setItems(beansString, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        Log.d("MainActivity", "Connecting...");
                         beans[which].connect(context, new SerialBytestreamListener());
                     }
                 });
